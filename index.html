@@ -99,16 +99,6 @@
             border-top: 1px dashed #000;
             margin: 15px 0;
         }
-
-        /* WhatsApp Floating Chat */
-        #whatsapp-chat {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: scale(0);
-            transform-origin: bottom right;
-        }
-        #whatsapp-chat.active {
-            transform: scale(1);
-        }
     </style>
 </head>
 <body class="bg-stone-50 text-stone-800">
@@ -122,7 +112,6 @@
                 <a href="#home" class="hover:text-amber-700 transition">Beranda</a>
                 <a href="#menu" class="hover:text-amber-700 transition">Menu</a>
                 <a href="#testimonials" class="hover:text-amber-700 transition">Testimoni</a>
-                <a href="#info" class="hover:text-amber-700 transition">Info</a>
                 <a href="#location" class="hover:text-amber-700 transition">Lokasi</a>
                 <button onclick="toggleCart()" class="relative p-2 text-amber-900">
                     <i class="fas fa-shopping-bag text-xl"></i>
@@ -146,7 +135,6 @@
                 <a href="#home" onclick="toggleMobileMenu()" class="hover:text-amber-700">Beranda</a>
                 <a href="#menu" onclick="toggleMobileMenu()" class="hover:text-amber-700">Menu</a>
                 <a href="#testimonials" onclick="toggleMobileMenu()" class="hover:text-amber-700">Testimoni</a>
-                <a href="#info" onclick="toggleMobileMenu()" class="hover:text-amber-700">Info</a>
                 <a href="#location" onclick="toggleMobileMenu()" class="hover:text-amber-700">Lokasi</a>
             </div>
         </div>
@@ -232,61 +220,49 @@
             </div>
         </div>
     </section>
-
-    <!-- Info Section: Jadwal & Alamat -->
-    <section id="info" class="py-20 bg-stone-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-stone-200">
-                    <div class="flex items-center space-x-4 mb-6 text-amber-900">
-                        <i class="fas fa-clock text-3xl"></i>
-                        <h3 class="text-2xl font-serif font-bold">Jadwal Operasional</h3>
-                    </div>
-                    <ul class="space-y-4">
-                        <li class="flex justify-between border-b border-stone-100 pb-2">
-                            <span class="font-semibold text-stone-700">Senin - Kamis</span>
-                            <span class="text-amber-800 font-bold">10:00 - 22:00</span>
-                        </li>
-                        <li class="flex justify-between border-b border-stone-100 pb-2">
-                            <span class="font-semibold text-stone-700">Jumat</span>
-                            <span class="text-amber-800 font-bold">13:30 - 23:00</span>
-                        </li>
-                        <li class="flex justify-between border-b border-stone-100 pb-2">
-                            <span class="font-semibold text-stone-700">Sabtu - Minggu</span>
-                            <span class="text-amber-800 font-bold">08:00 - 00:00</span>
-                        </li>
-                        <li class="flex justify-between text-red-600 font-semibold italic">
-                            <span>Hari Libur Nasional</span>
-                            <span>Tutup</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="space-y-6">
-                    <h3 class="text-3xl font-serif font-bold text-amber-900 mb-4">Mampir Ke Sini Yuk!</h3>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 bg-amber-800 text-white rounded-2xl flex items-center justify-center shrink-0">
-                            <i class="fas fa-map-marker-alt text-xl"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-lg text-stone-800">Alamat Lengkap</h4>
-                            <p class="text-stone-600 leading-relaxed">Jl. Kopi Nikmat No. 123, Kel. Seduah Raya, Kec. Brew, Jakarta Selatan, 12345.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 bg-stone-800 text-white rounded-2xl flex items-center justify-center shrink-0">
-                            <i class="fas fa-phone-alt text-xl"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-lg text-stone-800">Hubungi Kami</h4>
-                            <p class="text-stone-600">0878-1701-4194</p>
-                            <p class="text-stone-600">info@beanbrew.com</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    
+    <!-- Info Section -->
+<section class="bg-stone-100 py-20">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="text-center mb-12">
+            <h3 class="text-3xl font-serif font-bold text-amber-900 mb-2">Informasi</h3>
+            <div class="w-20 h-1 bg-amber-700 mx-auto"></div>
         </div>
-    </section>
+
+        <div class="grid md:grid-cols-2 gap-8">
+
+            <!-- Jadwal -->
+            <div class="bg-white p-8 rounded-2xl shadow border border-stone-100">
+                <h4 class="text-xl font-bold text-amber-900 mb-4">
+                    <i class="fas fa-clock mr-2"></i>Jam Operasional
+                </h4>
+
+                <ul class="space-y-2 text-stone-600">
+                    <li>Senin - Jumat : 08.00 - 22.00</li>
+                    <li>Sabtu : 09.00 - 23.00</li>
+                    <li>Minggu : 09.00 - 21.00</li>
+                </ul>
+            </div>
+
+            <!-- Alamat -->
+            <div class="bg-white p-8 rounded-2xl shadow border border-stone-100">
+                <h4 class="text-xl font-bold text-amber-900 mb-4">
+                    <i class="fas fa-map-marker-alt mr-2"></i>Alamat
+                </h4>
+
+                <p class="text-stone-600">
+                    Jl. Kopi Nikmat No. 123<br>
+                    Jakarta, Indonesia
+                </p>
+
+                <p class="text-sm text-stone-500 mt-3">
+                    Dekat Monumen Nasional
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
 
     <!-- Location Section (Google Maps) -->
     <section id="location" class="py-20">
@@ -315,38 +291,6 @@
             <p class="text-xs border-t border-stone-800 pt-8">&copy; 2024 Bean & Brew. All Rights Reserved.</p>
         </div>
     </footer>
-
-    <!-- WhatsApp Melayang -->
-    <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end space-y-4">
-        <!-- Form Chat Admin -->
-        <div id="whatsapp-chat" class="bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden w-[300px]">
-            <div class="bg-green-600 p-4 text-white flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                        <i class="fab fa-whatsapp text-2xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm">Chat Admin</h4>
-                        <p class="text-[10px] text-green-100">Online | Bean & Brew</p>
-                    </div>
-                </div>
-                <button onclick="toggleWhatsAppChat()" class="text-white hover:text-green-200"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-4 space-y-3">
-                <p class="text-xs text-stone-500 italic">Halo! Ada yang bisa kami bantu? Silakan ketik pesan Anda di bawah.</p>
-                <textarea id="wa-message" placeholder="Ketik pesan Anda di sini..." class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-green-600 text-sm h-24 resize-none"></textarea>
-                <button onclick="sendWhatsAppChat()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-sm transition flex items-center justify-center space-x-2">
-                    <i class="fas fa-paper-plane"></i>
-                    <span>Kirim Pesan</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Tombol WhatsApp -->
-        <button onclick="toggleWhatsAppChat()" class="bg-green-600 hover:bg-green-700 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-3xl transition-transform hover:scale-110 active:scale-95 animate-bounce-slow">
-            <i class="fab fa-whatsapp"></i>
-        </button>
-    </div>
 
     <!-- Cart Sidebar -->
     <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white shadow-2xl z-[60] transform translate-x-full transition-transform duration-300 ease-in-out">
@@ -671,21 +615,6 @@
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // WhatsApp Melayang Functions
-        function toggleWhatsAppChat() {
-            document.getElementById('whatsapp-chat').classList.toggle('active');
-        }
-
-        function sendWhatsAppChat() {
-            const message = document.getElementById('wa-message').value;
-            if (!message) return alert("Silakan ketik pesan terlebih dahulu!");
-            
-            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-            window.open(waUrl, '_blank');
-            document.getElementById('wa-message').value = "";
-            toggleWhatsAppChat();
-        }
-
         // --- Perbaikan Fetch dengan Retry & Fallback ---
         async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
             try {
@@ -850,6 +779,56 @@
             initStarRating();
             fetchTestimonials();
         };
+        
+        function toggleWAChat(){
+    const box = document.getElementById("wa-chat-box");
+    box.classList.toggle("hidden");
+}
+
+function sendWAChat(){
+
+    const text = document.getElementById("wa-message").value;
+
+    if(!text){
+        alert("Tulis pesan dulu.");
+        return;
+    }
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+
+    window.open(url,"_blank");
+
+}
+        
     </script>
+    <!-- WhatsApp Floating Button -->
+<button onclick="toggleWAChat()" 
+class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center text-2xl z-50">
+<i class="fab fa-whatsapp"></i>
+</button>
+
+<!-- WhatsApp Chat Box -->
+<div id="wa-chat-box" class="hidden fixed bottom-24 right-6 w-80 bg-white rounded-xl shadow-xl border z-50">
+
+    <div class="bg-green-500 text-white p-4 rounded-t-xl flex justify-between">
+        <span class="font-bold">Chat Admin</span>
+        <button onclick="toggleWAChat()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div class="p-4">
+        <textarea id="wa-message"
+        class="w-full border rounded-lg p-3 h-24 text-sm"
+        placeholder="Tulis pesan ke admin..."></textarea>
+
+        <button onclick="sendWAChat()"
+        class="w-full mt-3 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-bold">
+        Kirim ke WhatsApp
+        </button>
+    </div>
+
+</div>
+
 </body>
 </html>
