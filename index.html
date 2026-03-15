@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bean & Brew | Coffee Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- html2canvas untuk fitur download struk -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&family=Courier+Prime&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .font-serif {
+            font-family: 'Playfair+Display', serif;
+        }
+        .font-mono {
+            /* Menggunakan Courier New (font sistem) untuk hasil render gambar yang jauh lebih tajam */
+            font-family: 'Courier New', Courier, monospace !important;
+            line-height: 2; /* Menambah ruang vertikal */
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+        }
+        .coffee-gradient {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #b45309;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        #mobile-menu {
+            transition: all 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        #mobile-menu.active {
+            max-height: 300px;
+        }
+
+        .star-input i.active {
+            color: #fbbf24; /* amber-400 */
+        }
+
+        /* Gaya Struk Belanja */
+        #receipt-wrapper {
+            display: inline-block;
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        #receipt-content {
+            width: 340px; /* Diperlebar agar teks kanan tidak keluar batas */
+            background: #fff;
+            padding: 45px 40px 55px 40px; /* Padding sisi kanan/kiri ditambah */
+            color: #000;
+            font-size: 13px;
+            line-height: 2;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+            overflow: visible;
+            letter-spacing: 0.3px;
+        }
+        /* Efek gerigi bawah struk */
+        #receipt-content::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(-45deg, transparent 5px, #fff 5px), linear-gradient(45deg, transparent 5px, #fff 5px);
+            background-size: 10px 10px;
+            background-repeat: repeat-x;
+        }
+        .receipt-dash {
+            border-top: 1px dashed #000;
+            margin: 15px 0;
+        }
+
+        /* WhatsApp Floating Chat */
+        #whatsapp-chat {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(0);
+            transform-origin: bottom right;
+        }
+        #whatsapp-chat.active {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-stone-200">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-serif font-bold text-amber-900">Bean & Brew</h1>
+            
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#home" class="hover:text-amber-700 transition">Beranda</a>
+                <a href="#menu" class="hover:text-amber-700 transition">Menu</a>
+                <a href="#testimonials" class="hover:text-amber-700 transition">Testimoni</a>
+                <a href="#info" class="hover:text-amber-700 transition">Info</a>
+                <a href="#location" class="hover:text-amber-700 transition">Lokasi</a>
+                <button onclick="toggleCart()" class="relative p-2 text-amber-900">
+                    <i class="fas fa-shopping-bag text-xl"></i>
+                    <span id="cart-count" class="cart-badge">0</span>
+                </button>
+            </div>
+
+            <div class="md:hidden flex items-center space-x-4">
+                <button onclick="toggleCart()" class="relative p-2 text-amber-900">
+                    <i class="fas fa-shopping-bag text-xl"></i>
+                    <span id="cart-count-mob" class="cart-badge">0</span>
+                </button>
+                <button onclick="toggleMobileMenu()" class="text-amber-900 text-2xl">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="md:hidden bg-white border-b border-stone-100 px-4">
+            <div class="flex flex-col space-y-4 py-4">
+                <a href="#home" onclick="toggleMobileMenu()" class="hover:text-amber-700">Beranda</a>
+                <a href="#menu" onclick="toggleMobileMenu()" class="hover:text-amber-700">Menu</a>
+                <a href="#testimonials" onclick="toggleMobileMenu()" class="hover:text-amber-700">Testimoni</a>
+                <a href="#info" onclick="toggleMobileMenu()" class="hover:text-amber-700">Info</a>
+                <a href="#location" onclick="toggleMobileMenu()" class="hover:text-amber-700">Lokasi</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="h-screen flex items-center justify-center text-center text-white coffee-gradient">
+        <div class="px-4">
+            <h2 class="text-4xl md:text-7xl font-serif mb-4">Awali Harimu <br> dengan Rasa.</h2>
+            <p class="text-base md:text-xl mb-8 text-stone-200">Biji kopi pilihan, dipanggang dengan cinta, diseduh untuk Anda.</p>
+            <a href="#menu" class="bg-amber-700 hover:bg-amber-800 text-white px-8 py-3 rounded-full transition duration-300 inline-block font-semibold">Pesan Sekarang</a>
+        </div>
+    </header>
+
+    <!-- Menu Section -->
+    <section id="menu" class="max-w-6xl mx-auto px-4 py-20">
+        <div class="text-center mb-16">
+            <h3 class="text-3xl font-serif font-bold text-amber-900 mb-2">Daftar Menu Kami</h3>
+            <div class="w-20 h-1 bg-amber-700 mx-auto"></div>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-2 mb-12">
+            <button onclick="filterMenu('all', this)" class="category-btn active px-5 py-2 rounded-full border border-amber-700 bg-amber-700 text-white transition text-sm md:text-base">Semua</button>
+            <button onclick="filterMenu('coffee', this)" class="category-btn px-5 py-2 rounded-full border border-amber-700 text-amber-700 hover:bg-amber-700 hover:text-white transition text-sm md:text-base">Kopi</button>
+            <button onclick="filterMenu('non-coffee', this)" class="category-btn px-5 py-2 rounded-full border border-amber-700 text-amber-700 hover:bg-amber-700 hover:text-white transition text-sm md:text-base">Non-Kopi</button>
+            <button onclick="filterMenu('food', this)" class="category-btn px-5 py-2 rounded-full border border-amber-700 text-amber-700 hover:bg-amber-700 hover:text-white transition text-sm md:text-base">Snack</button>
+        </div>
+
+        <div id="menu-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"></div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="bg-amber-50 py-20">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-serif font-bold text-amber-900 mb-2">Apa Kata Mereka?</h3>
+                <p class="text-stone-600">Bagikan pengalaman Anda berkunjung ke Bean & Brew</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+                <!-- Form Testimoni -->
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-stone-100 h-fit">
+                    <h4 class="text-xl font-bold mb-6 text-amber-900">Tulis Testimoni</h4>
+                    <form id="testimonial-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1 text-stone-700">Nama</label>
+                            <input type="text" id="testi-name" required class="w-full p-2.5 border border-stone-200 rounded-lg focus:outline-amber-700 bg-stone-50">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-stone-700">Rating</label>
+                            <div id="star-input" class="flex space-x-2 text-2xl text-stone-300 star-input">
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" data-value="1"></i>
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" data-value="2"></i>
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" data-value="3"></i>
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" data-value="4"></i>
+                                <i class="fas fa-star cursor-pointer hover:text-amber-400 transition" data-value="5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1 text-stone-700">Pesan</label>
+                            <textarea id="testi-message" required class="w-full p-2.5 border border-stone-200 rounded-lg h-24 focus:outline-amber-700 bg-stone-50"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1 text-stone-700">Foto (Opsional)</label>
+                            <input type="file" id="testi-photo" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+                        </div>
+                        <button type="submit" id="submit-testi" class="w-full bg-amber-800 text-white py-3 rounded-lg hover:bg-amber-900 transition flex justify-center items-center font-bold">
+                            <span>Kirim Testimoni</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- List Testimoni -->
+                <div class="lg:col-span-2">
+                    <div id="testi-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="col-span-full py-10 text-center text-stone-400">
+                            <div class="loader mx-auto mb-2"></div>
+                            Menghubungkan ke database...
+                        </div>
+                    </div>
+                    <div id="testi-pagination" class="flex flex-wrap justify-center mt-8 gap-2"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Info Section: Jadwal & Alamat -->
+    <section id="info" class="py-20 bg-stone-100">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-stone-200">
+                    <div class="flex items-center space-x-4 mb-6 text-amber-900">
+                        <i class="fas fa-clock text-3xl"></i>
+                        <h3 class="text-2xl font-serif font-bold">Jadwal Operasional</h3>
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="flex justify-between border-b border-stone-100 pb-2">
+                            <span class="font-semibold text-stone-700">Senin - Kamis</span>
+                            <span class="text-amber-800 font-bold">10:00 - 22:00</span>
+                        </li>
+                        <li class="flex justify-between border-b border-stone-100 pb-2">
+                            <span class="font-semibold text-stone-700">Jumat</span>
+                            <span class="text-amber-800 font-bold">13:30 - 23:00</span>
+                        </li>
+                        <li class="flex justify-between border-b border-stone-100 pb-2">
+                            <span class="font-semibold text-stone-700">Sabtu - Minggu</span>
+                            <span class="text-amber-800 font-bold">08:00 - 00:00</span>
+                        </li>
+                        <li class="flex justify-between text-red-600 font-semibold italic">
+                            <span>Hari Libur Nasional</span>
+                            <span>Tutup</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="space-y-6">
+                    <h3 class="text-3xl font-serif font-bold text-amber-900 mb-4">Mampir Ke Sini Yuk!</h3>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-amber-800 text-white rounded-2xl flex items-center justify-center shrink-0">
+                            <i class="fas fa-map-marker-alt text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-stone-800">Alamat Lengkap</h4>
+                            <p class="text-stone-600 leading-relaxed">Jl. Kopi Nikmat No. 123, Kel. Seduah Raya, Kec. Brew, Jakarta Selatan, 12345.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-stone-800 text-white rounded-2xl flex items-center justify-center shrink-0">
+                            <i class="fas fa-phone-alt text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-stone-800">Hubungi Kami</h4>
+                            <p class="text-stone-600">0878-1701-4194</p>
+                            <p class="text-stone-600">info@beanbrew.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location Section (Google Maps) -->
+    <section id="location" class="py-20">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h3 class="text-3xl font-serif font-bold text-amber-900 mb-2">Lokasi Kami</h3>
+            <p class="text-stone-600 mb-10">Kunjungi kami untuk pengalaman kopi yang sesungguhnya</p>
+            <div class="rounded-3xl overflow-hidden shadow-lg border-4 border-white h-[300px] md:h-[450px]">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15866.273678071853!2d106.8227453!3d-6.1884485!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f436b8c94b07%3A0x2f9f8e4040e34b1a!2sNational%20Monument!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid" 
+                    width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-400 py-12 text-center">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-2xl font-serif text-white mb-4">Bean & Brew</h2>
+            <p class="mb-4">Jl. Kopi Nikmat No. 123, Jakarta</p>
+            <div class="flex justify-center space-x-6 mb-8 text-xl text-stone-300">
+                <a href="#" class="hover:text-amber-500 transition"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="hover:text-amber-500 transition"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="hover:text-amber-500 transition"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <p class="text-xs border-t border-stone-800 pt-8">&copy; 2024 Bean & Brew. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Melayang -->
+    <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end space-y-4">
+        <!-- Form Chat Admin -->
+        <div id="whatsapp-chat" class="bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden w-[300px]">
+            <div class="bg-green-600 p-4 text-white flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <i class="fab fa-whatsapp text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">Chat Admin</h4>
+                        <p class="text-[10px] text-green-100">Online | Bean & Brew</p>
+                    </div>
+                </div>
+                <button onclick="toggleWhatsAppChat()" class="text-white hover:text-green-200"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-4 space-y-3">
+                <p class="text-xs text-stone-500 italic">Halo! Ada yang bisa kami bantu? Silakan ketik pesan Anda di bawah.</p>
+                <textarea id="wa-message" placeholder="Ketik pesan Anda di sini..." class="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-green-600 text-sm h-24 resize-none"></textarea>
+                <button onclick="sendWhatsAppChat()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-sm transition flex items-center justify-center space-x-2">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Kirim Pesan</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tombol WhatsApp -->
+        <button onclick="toggleWhatsAppChat()" class="bg-green-600 hover:bg-green-700 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-3xl transition-transform hover:scale-110 active:scale-95 animate-bounce-slow">
+            <i class="fab fa-whatsapp"></i>
+        </button>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white shadow-2xl z-[60] transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex justify-between items-center mb-8 border-b pb-4">
+                <h4 class="text-xl font-bold text-amber-900">Keranjang</h4>
+                <button onclick="toggleCart()" class="text-stone-400 hover:text-stone-900"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div id="cart-items" class="flex-grow overflow-y-auto space-y-4">
+                <p class="text-center text-stone-500 mt-10 italic">Wah, keranjang masih kosong nih.</p>
+            </div>
+            <div class="border-t pt-6 mt-6">
+                <div class="flex justify-between text-lg font-bold mb-6">
+                    <span>Total</span>
+                    <span id="cart-total" class="text-amber-800">Rp 0</span>
+                </div>
+                <div class="space-y-3">
+                    <input type="text" id="customer-name" placeholder="Nama Lengkap" class="w-full p-3 border border-stone-200 rounded-lg focus:outline-amber-700 text-sm">
+                    <textarea id="customer-address" placeholder="Alamat Pengiriman / Meja" class="w-full p-3 border border-stone-200 rounded-lg h-20 focus:outline-amber-700 text-sm"></textarea>
+                    <button onclick="processOrder()" class="w-full bg-amber-800 hover:bg-amber-900 text-white py-4 rounded-lg font-bold transition flex items-center justify-center space-x-2">
+                        <i class="fas fa-receipt text-xl"></i>
+                        <span>Proses Pesanan</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Struk -->
+    <div id="receipt-modal" class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full max-h-[95vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="p-4 border-b flex justify-between items-center bg-stone-50">
+                <span class="font-bold text-stone-700">Struk Digital Anda</span>
+                <button onclick="closeReceipt()" class="text-stone-400 hover:text-stone-900 transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <!-- Area Scroll Struk -->
+            <div class="flex-grow overflow-y-auto p-6 flex justify-center bg-stone-100">
+                <div id="receipt-wrapper">
+                    <div id="receipt-content" class="font-mono">
+                        <div class="text-center mb-4">
+                            <div class="flex justify-center mb-2 text-amber-900">
+                                <i class="fas fa-mug-hot text-4xl"></i>
+                            </div>
+                            <h5 class="font-bold text-xl uppercase tracking-tighter text-amber-950" style="font-weight: 800; letter-spacing: 1px;">Bean & Brew</h5>
+                            <p class="text-[9px] text-stone-600">Jl. Kopi Nikmat No. 123, Jakarta</p>
+                            <p class="text-[9px] text-stone-600">WA: 087817014194</p>
+                        </div>
+                        
+                        <div class="receipt-dash"></div>
+                        
+                        <div class="text-[10px] space-y-2.5 mb-4">
+                            <div class="flex justify-between items-center">
+                                <span style="font-weight: 600;">TGL:</span>
+                                <span id="r-date" class="font-bold text-right" style="font-weight: 700;"></span>
+                            </div>
+                            <div class="flex justify-between items-start">
+                                <span style="font-weight: 600;">NAMA:</span>
+                                <span id="r-name" class="uppercase font-bold text-right pl-4" style="font-weight: 700;"></span>
+                            </div>
+                            <div class="flex justify-between items-start">
+                                <span style="font-weight: 600;">LOKASI:</span>
+                                <span id="r-address" class="uppercase font-bold text-right pl-4" style="font-weight: 700;"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="receipt-dash"></div>
+                        
+                        <div id="r-items" class="text-[11px] space-y-4">
+                            <!-- Items injected here -->
+                        </div>
+                        
+                        <div class="receipt-dash"></div>
+                        
+                        <div class="flex justify-between font-bold text-sm text-black pt-2" style="font-weight: 800;">
+                            <span>TOTAL AKHIR</span>
+                            <span id="r-total"></span>
+                        </div>
+                        
+                        <div class="receipt-dash"></div>
+                        
+                        <div class="text-center space-y-2 mt-8">
+                            <p class="text-[10px] font-bold" style="font-weight: 700;">Terima kasih atas kunjungannya!</p>
+                            <p class="text-[9px] text-stone-500 italic">Harap tunjukkan struk ini ke kasir.</p>
+                            <div class="flex justify-center space-x-3 text-[9px] text-stone-600 mt-2">
+                                <span><i class="fab fa-instagram"></i> @beanbrew</span>
+                                <span><i class="fab fa-whatsapp"></i> 087817014194</span>
+                            </div>
+                            <div class="border border-black p-1 text-[8px] mt-6 inline-block font-bold" style="font-weight: 700;">
+                                #SupportLocalCoffee
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="p-4 grid grid-cols-2 gap-3 bg-white border-t">
+                <button onclick="downloadReceipt()" class="bg-stone-100 hover:bg-stone-200 text-stone-800 py-3.5 rounded-xl font-bold transition flex items-center justify-center space-x-2 text-sm">
+                    <i class="fas fa-download"></i>
+                    <span>Simpan Gambar</span>
+                </button>
+                <button onclick="sendToWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-bold transition flex items-center justify-center space-x-2 text-sm">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Kirim WA</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WHATSAPP_NUMBER = "6287817014194";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzG6nS3awACUaL2gGcJxK9K5JYyhFHqhAVTtLUSIWds0ZImOXv3xVqbO0TptRfzOLMDA/exec"; 
+        
+        const menuData = [
+            { id: 1, name: "Kopi Susu Gula Aren", price: 22000, category: "coffee", img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=400&q=80" },
+            { id: 2, name: "Caramel Macchiato", price: 28000, category: "coffee", img: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=400&q=80" },
+            { id: 3, name: "Matcha Latte", price: 25000, category: "non-coffee", img: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=400&q=80" },
+            { id: 4, name: "Red Velvet Latte", price: 25000, category: "non-coffee", img: "https://images.unsplash.com/photo-1610889556528-9a770e32642f?auto=format&fit=crop&w=400&q=80" },
+            { id: 5, name: "Butter Croissant", price: 18000, category: "food", img: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=400&q=80" },
+            { id: 6, name: "French Fries", price: 20000, category: "food", img: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&q=80" }
+        ];
+
+        // Mock Data Fallback
+        const fallbackTestimonials = [
+            { name: "Andi Saputra", rating: 5, message: "Kopi Susu Gula Arennya juara! Pas banget buat nemenin kerja.", photo: "" },
+            { name: "Siti Aminah", rating: 4, message: "Tempatnya nyaman, baristanya ramah. Croissant-nya renyah!", photo: "" },
+            { name: "Budi Santoso", rating: 5, message: "Matcha Latte-nya kental dan gak terlalu manis. Recommended!", photo: "" }
+        ];
+
+        let cart = [];
+        let testimonials = [];
+        let currentPage = 1;
+        let selectedRating = 5;
+        const itemsPerPage = 8;
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('active');
+        }
+
+        function toggleCart() {
+            document.getElementById('cart-sidebar').classList.toggle('translate-x-full');
+        }
+
+        function renderMenu(items) {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = items.map(item => `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100 group">
+                    <div class="h-48 md:h-56 overflow-hidden">
+                        <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="p-5 md:p-6">
+                        <h4 class="font-bold text-base md:text-lg text-amber-950 mb-1">${item.name}</h4>
+                        <p class="text-amber-800 font-bold mb-4">Rp ${item.price.toLocaleString('id-ID')}</p>
+                        <button onclick="addToCart(${item.id})" class="w-full bg-stone-50 border border-amber-800 text-amber-800 hover:bg-amber-800 hover:text-white py-2.5 rounded-xl transition-all font-semibold text-sm">
+                            + Tambah Pesanan
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterMenu(category, btn) {
+            document.querySelectorAll('.category-btn').forEach(b => {
+                b.classList.remove('bg-amber-700', 'text-white');
+                b.classList.add('text-amber-700');
+            });
+            btn.classList.add('bg-amber-700', 'text-white');
+            category === 'all' ? renderMenu(menuData) : renderMenu(menuData.filter(i => i.category === category));
+        }
+
+        function addToCart(id) {
+            const item = menuData.find(i => i.id === id);
+            const exist = cart.find(i => i.id === id);
+            exist ? exist.quantity += 1 : cart.push({ ...item, quantity: 1 });
+            updateCart();
+            const badges = [document.getElementById('cart-count'), document.getElementById('cart-count-mob')];
+            badges.forEach(b => {
+                b.classList.add('scale-150');
+                setTimeout(() => b.classList.remove('scale-150'), 200);
+            });
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            const count = cart.reduce((acc, i) => acc + i.quantity, 0);
+            document.getElementById('cart-count').innerText = count;
+            document.getElementById('cart-count-mob').innerText = count;
+            
+            if(cart.length === 0) {
+                cartItems.innerHTML = '<p class="text-center text-stone-500 mt-10 italic">Wah, keranjang masih kosong nih.</p>';
+                cartTotal.innerText = 'Rp 0';
+                return;
+            }
+
+            let total = 0;
+            cartItems.innerHTML = cart.map(item => {
+                total += item.price * item.quantity;
+                return `
+                    <div class="flex items-center space-x-3 bg-stone-50 p-3 rounded-xl">
+                        <img src="${item.img}" class="w-12 h-12 rounded-lg object-cover">
+                        <div class="flex-grow">
+                            <h5 class="font-bold text-xs truncate w-32">${item.name}</h5>
+                            <div class="flex items-center space-x-3 mt-1">
+                                <button onclick="changeQty(${item.id}, -1)" class="w-5 h-5 bg-white border rounded shadow-sm flex items-center justify-center text-xs">-</button>
+                                <span class="text-xs font-semibold">${item.quantity}</span>
+                                <button onclick="changeQty(${item.id}, 1)" class="w-5 h-5 bg-white border rounded shadow-sm flex items-center justify-center text-xs">+</button>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                             <p class="text-xs font-bold text-amber-900">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            cartTotal.innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            item.quantity += delta;
+            if(item.quantity <= 0) cart = cart.filter(i => i.id !== id);
+            updateCart();
+        }
+
+        function processOrder() {
+            const name = document.getElementById('customer-name').value;
+            const address = document.getElementById('customer-address').value;
+            if(!name || !address || cart.length === 0) return alert("Mohon lengkapi data pengiriman dan pesanan!");
+
+            document.getElementById('r-name').innerText = name;
+            document.getElementById('r-address').innerText = address;
+            document.getElementById('r-date').innerText = new Date().toLocaleString('id-ID', { 
+                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+            
+            const rItems = document.getElementById('r-items');
+            let total = 0;
+            rItems.innerHTML = cart.map(item => {
+                const sub = item.price * item.quantity;
+                total += sub;
+                return `
+                    <div class="item-row" style="padding: 5px 0; display: block;">
+                        <div class="flex justify-between font-bold" style="padding-top: 8px; padding-bottom: 4px; font-weight: 700; line-height: 1.5;">
+                            <span style="display: block; flex: 1; padding-right: 10px;">${item.name}</span>
+                        </div>
+                        <div class="flex justify-between text-stone-600 text-[10px]" style="padding-bottom: 8px; font-weight: 500;">
+                            <span>${item.quantity} x ${item.price.toLocaleString('id-ID')}</span>
+                            <span style="text-align: right;">${sub.toLocaleString('id-ID')}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('r-total').innerText = 'Rp ' + total.toLocaleString('id-ID');
+            document.getElementById('receipt-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeReceipt() {
+            document.getElementById('receipt-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto'; 
+        }
+
+        function downloadReceipt() {
+            const receipt = document.getElementById('receipt-content');
+            
+            html2canvas(receipt, {
+                scale: 4, 
+                backgroundColor: "#ffffff",
+                logging: false,
+                useCORS: true,
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: -window.scrollY,
+                onclone: (clonedDoc) => {
+                    const clonedReceipt = clonedDoc.getElementById('receipt-content');
+                    // Menambah margin/padding saat capture agar teks kanan tidak terpotong
+                    clonedReceipt.style.padding = '60px 50px';
+                    clonedReceipt.style.boxShadow = 'none';
+                    clonedReceipt.style.transform = 'none';
+                    clonedReceipt.style.fontFamily = "'Courier New', Courier, monospace";
+                    clonedReceipt.style.letterSpacing = "0.5px";
+                    
+                    // Memaksa area item row agar lebar penuh
+                    clonedDoc.querySelectorAll('.item-row').forEach(row => {
+                        row.style.width = '100%';
+                        row.style.marginBottom = '12px';
+                    });
+                }
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Struk_BeanBrew_${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png", 1.0);
+                link.click();
+            });
+        }
+
+        function sendToWhatsApp() {
+            const name = document.getElementById('r-name').innerText;
+            const address = document.getElementById('r-address').innerText;
+            let total = 0;
+
+            let msg = `*PESANAN BARU - BEAN & BREW*\n`;
+            msg += `--------------------------\n`;
+            msg += `👤 *NAMA:* ${name}\n`;
+            msg += `📍 *LOKASI:* ${address}\n`;
+            msg += `📅 *WAKTU:* ${document.getElementById('r-date').innerText}\n`;
+            msg += `--------------------------\n\n`;
+            msg += `*DETAIL ITEM:*\n`;
+            cart.forEach(i => {
+                const sub = i.price * i.quantity;
+                msg += `• ${i.name}\n  (${i.quantity}x) - Rp ${sub.toLocaleString('id-ID')}\n`;
+                total += sub;
+            });
+            msg += `\n--------------------------\n`;
+            msg += `💰 *TOTAL: Rp ${total.toLocaleString('id-ID')}*\n`;
+            msg += `--------------------------\n\n`;
+            msg += `_Catatan: Harap segera diproses ya!_`;
+            
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // WhatsApp Melayang Functions
+        function toggleWhatsAppChat() {
+            document.getElementById('whatsapp-chat').classList.toggle('active');
+        }
+
+        function sendWhatsAppChat() {
+            const message = document.getElementById('wa-message').value;
+            if (!message) return alert("Silakan ketik pesan terlebih dahulu!");
+            
+            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(waUrl, '_blank');
+            document.getElementById('wa-message').value = "";
+            toggleWhatsAppChat();
+        }
+
+        // --- Perbaikan Fetch dengan Retry & Fallback ---
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                if (retries <= 0) throw error;
+                await new Promise(resolve => setTimeout(resolve, backoff));
+                return fetchWithRetry(url, options, retries - 1, backoff * 2);
+            }
+        }
+
+        async function fetchTestimonials() {
+            const listContainer = document.getElementById('testi-list');
+            try {
+                const data = await fetchWithRetry(`${SCRIPT_URL}?action=get&t=${Date.now()}`, {
+                    method: 'GET'
+                });
+                
+                if (Array.isArray(data)) {
+                    testimonials = data.reverse();
+                    renderTestimonials();
+                } else {
+                    throw new Error('Format data salah');
+                }
+            } catch (error) {
+                console.error("Error fetching testimonials:", error);
+                testimonials = fallbackTestimonials;
+                renderTestimonials();
+                const errorBox = document.createElement('div');
+                errorBox.className = "col-span-full text-[10px] text-stone-400 text-center mt-2 italic";
+                errorBox.innerText = "Mode Offline: Menampilkan testimoni lokal.";
+                listContainer.appendChild(errorBox);
+            }
+        }
+
+        function renderStars(rating) {
+            let starsHtml = '';
+            const val = parseInt(rating);
+            const finalVal = isNaN(val) ? 5 : val;
+            for (let i = 1; i <= 5; i++) {
+                starsHtml += i <= finalVal ? '<i class="fas fa-star text-amber-400"></i>' : '<i class="far fa-star text-stone-300"></i>';
+            }
+            return starsHtml;
+        }
+
+        function renderTestimonials() {
+            const list = document.getElementById('testi-list');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedItems = testimonials.slice(start, end);
+
+            if (testimonials.length === 0) {
+                list.innerHTML = '<p class="col-span-full text-center text-stone-400 py-10 italic border rounded-2xl border-dashed">Belum ada testimoni. Jadilah yang pertama!</p>';
+                return;
+            }
+
+            list.innerHTML = paginatedItems.map(t => `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-stone-100 flex flex-col h-full hover:border-amber-200 transition-colors">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="${t.photo && t.photo.startsWith('data:image') ? t.photo : 'https://ui-avatars.com/api/?name='+t.name+'&background=78350f&color=fff'}" class="w-12 h-12 rounded-full object-cover border-2 border-amber-50">
+                        <div>
+                            <h5 class="font-bold text-amber-950 text-sm">${t.name}</h5>
+                            <div class="flex text-[10px] space-x-0.5">
+                                ${renderStars(t.rating)}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-stone-600 italic">"${t.message}"</p>
+                </div>
+            `).join('');
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const container = document.getElementById('testi-pagination');
+            const totalPages = Math.ceil(testimonials.length / itemsPerPage);
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+            let html = '';
+            for(let i = 1; i <= totalPages; i++) {
+                html += `
+                    <button onclick="goToPage(${i})" class="w-10 h-10 rounded-full font-bold transition ${currentPage === i ? 'bg-amber-800 text-white shadow-md' : 'bg-white text-amber-800 border border-amber-200'}">
+                        ${i}
+                    </button>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTestimonials();
+            document.getElementById('testimonials').scrollIntoView();
+        }
+
+        document.getElementById('testimonial-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-testi');
+            const name = document.getElementById('testi-name').value;
+            const message = document.getElementById('testi-message').value;
+            const photoFile = document.getElementById('testi-photo').files[0];
+            
+            btn.disabled = true;
+            btn.innerHTML = `<div class="loader mr-2"></div> <span>Mengirim...</span>`;
+
+            let photoBase64 = "";
+            if(photoFile) {
+                photoBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(photoFile);
+                });
+            }
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ 
+                        name: name, 
+                        message: message, 
+                        photo: photoBase64,
+                        rating: selectedRating 
+                    })
+                });
+
+                alert("Testimoni terkirim! Data akan muncul setelah divalidasi sistem.");
+                e.target.reset();
+                selectedRating = 5;
+                updateStarUI();
+                setTimeout(fetchTestimonials, 2000);
+            } catch (err) {
+                console.error("Submission error:", err);
+                alert("Gagal mengirim testimoni.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "Kirim Testimoni";
+            }
+        };
+
+        function initStarRating() {
+            document.querySelectorAll('#star-input i').forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.getAttribute('data-value'));
+                    updateStarUI();
+                });
+            });
+            updateStarUI();
+        }
+
+        function updateStarUI() {
+            document.querySelectorAll('#star-input i').forEach(star => {
+                const val = parseInt(star.getAttribute('data-value'));
+                star.classList.toggle('active', val <= selectedRating);
+            });
+        }
+
+        window.onload = () => {
+            renderMenu(menuData);
+            initStarRating();
+            fetchTestimonials();
+        };
+    </script>
+</body>
+</html>
