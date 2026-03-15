@@ -608,7 +608,27 @@
     html2canvas(receipt, {
         scale: 4,
         backgroundColor: "#ffffff",
-        useCORS: true
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        onclone: (clonedDoc) => {
+
+            const clonedReceipt = clonedDoc.getElementById('receipt-content');
+
+            clonedReceipt.style.padding = '60px 50px';
+            clonedReceipt.style.boxShadow = 'none';
+            clonedReceipt.style.transform = 'none';
+            clonedReceipt.style.fontFamily = "'Courier New', Courier, monospace";
+            clonedReceipt.style.letterSpacing = "0.5px";
+
+            clonedDoc.querySelectorAll('.item-row').forEach(row => {
+                row.style.width = '100%';
+                row.style.marginBottom = '12px';
+            });
+
+        }
     }).then(canvas => {
 
         const imgData = canvas.toDataURL("image/png");
@@ -616,39 +636,43 @@
         const printWindow = window.open('', '', 'width=400,height=600');
 
         printWindow.document.write(`
-            <html>
-            <head>
-            <title>Cetak Struk</title>
-            <style>
-            body{
-                margin:0;
-                display:flex;
-                justify-content:center;
-                align-items:center;
-                height:100vh;
-                background:white;
-            }
-            img{
-                width:340px;
-            }
-            </style>
-            </head>
-            <body>
-                <img src="${imgData}">
-                <script>
-                    window.onload = function(){
-                        window.print();
-                        window.onafterprint = function(){ window.close(); }
-                    }
-                <\/script>
-            </body>
-            </html>
+        <html>
+        <head>
+        <title>Cetak Struk</title>
+        <style>
+        body{
+            margin:0;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+            background:white;
+        }
+        img{
+            width:340px;
+        }
+        </style>
+        </head>
+        <body>
+
+        <img src="${imgData}">
+
+        <script>
+        window.onload = function(){
+            window.print();
+            window.onafterprint = function(){ window.close(); }
+        }
+        <\/script>
+
+        </body>
+        </html>
         `);
 
         printWindow.document.close();
 
     });
 }
+
         function sendToWhatsApp() {
             const name = document.getElementById('r-name').innerText;
             const address = document.getElementById('r-address').innerText;
