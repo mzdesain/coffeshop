@@ -288,7 +288,12 @@
                 <a href="#" class="hover:text-amber-500 transition"><i class="fab fa-facebook"></i></a>
                 <a href="#" class="hover:text-amber-500 transition"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <p class="text-xs border-t border-stone-800 pt-8">&copy; 2024 Bean & Brew. All Rights Reserved.</p>
+            <p class="text-xs border-t border-stone-800 pt-8">
+    &copy; 2026 <span class="font-bold">Bean & Brew</span>. Design by 
+    <a href="https://www.instagram.com/muzanni.uce" target="_blank" class="font-bold text-amber-400 hover:text-amber-500 transition">
+        muzanni.uce
+    </a>
+</p>
         </div>
     </footer>
 
@@ -388,15 +393,21 @@
             </div>
 
             <!-- Tombol Aksi -->
-            <div class="p-4 grid grid-cols-2 gap-3 bg-white border-t">
+            <div class="p-4 grid grid-cols-3 gap-3 bg-white border-t">
                 <button onclick="downloadReceipt()" class="bg-stone-100 hover:bg-stone-200 text-stone-800 py-3.5 rounded-xl font-bold transition flex items-center justify-center space-x-2 text-sm">
-                    <i class="fas fa-download"></i>
-                    <span>Simpan Gambar</span>
-                </button>
-                <button onclick="sendToWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-bold transition flex items-center justify-center space-x-2 text-sm">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>Kirim WA</span>
-                </button>
+    <i class="fas fa-download"></i>
+    <span>Simpan</span>
+</button>
+
+<button onclick="printReceipt()" class="bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition flex items-center justify-center space-x-2 text-sm">
+    <i class="fas fa-print"></i>
+    <span>Cetak</span>
+</button>
+
+<button onclick="sendToWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-bold transition flex items-center justify-center space-x-2 text-sm">
+    <i class="fab fa-whatsapp"></i>
+    <span>Kirim WA</span>
+</button>
             </div>
         </div>
     </div>
@@ -589,6 +600,39 @@
                 link.click();
             });
         }
+        
+        function printReceipt(){
+
+    const receipt = document.getElementById("receipt-content").innerHTML;
+
+    const printWindow = window.open('', '', 'width=400,height=600');
+
+    printWindow.document.write(`
+        <html>
+        <head>
+        <title>Cetak Struk</title>
+        <style>
+        body{
+            font-family: "Courier New", monospace;
+            padding:20px;
+            text-align:center;
+        }
+        </style>
+        </head>
+        <body>
+        ${receipt}
+        <script>
+            window.onload = function(){
+                window.print();
+                window.onafterprint = function(){ window.close(); }
+            }
+        <\/script>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+}
 
         function sendToWhatsApp() {
             const name = document.getElementById('r-name').innerText;
@@ -807,24 +851,27 @@ class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white w-16 h-
 <i class="fab fa-whatsapp"></i>
 </button>
 
-<!-- WhatsApp Chat Box -->
-<div id="wa-chat-box" class="hidden fixed bottom-24 right-6 w-80 bg-white rounded-xl shadow-xl border z-50">
+<!-- WhatsApp Chat Minimal -->
+<div id="wa-chat-box" class="hidden fixed bottom-24 right-6 w-72 bg-white rounded-2xl shadow-lg border border-stone-200 z-50">
 
-    <div class="bg-green-500 text-white p-4 rounded-t-xl flex justify-between">
-        <span class="font-bold">Chat Admin</span>
-        <button onclick="toggleWAChat()">
+    <div class="p-3 border-b flex justify-between items-center">
+        <span class="text-sm font-semibold text-stone-700">Chat Admin</span>
+        <button onclick="toggleWAChat()" class="text-stone-400 hover:text-stone-700">
             <i class="fas fa-times"></i>
         </button>
     </div>
 
-    <div class="p-4">
-        <textarea id="wa-message"
-        class="w-full border rounded-lg p-3 h-24 text-sm"
-        placeholder="Tulis pesan ke admin..."></textarea>
+    <div class="p-3">
+        <textarea 
+        id="wa-message"
+        class="w-full border border-stone-200 rounded-lg p-2 text-sm focus:outline-none focus:border-green-500 resize-none"
+        rows="3"
+        placeholder="Tulis pesan..."></textarea>
 
-        <button onclick="sendWAChat()"
-        class="w-full mt-3 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-bold">
-        Kirim ke WhatsApp
+        <button 
+        onclick="sendWAChat()"
+        class="w-full mt-2 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg text-sm font-semibold">
+        Kirim
         </button>
     </div>
 
